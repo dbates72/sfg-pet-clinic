@@ -1,6 +1,5 @@
 package guru.springframework.sfgpetclinic.model.services.map;
 
-import guru.springframework.sfgpetclinic.model.Pet;
 import guru.springframework.sfgpetclinic.model.Visit;
 import guru.springframework.sfgpetclinic.model.services.PetService;
 import guru.springframework.sfgpetclinic.model.services.PetTypeService;
@@ -36,25 +35,13 @@ public class VisitMapService extends AbstractMapService<Visit, Long> implements 
 
     @Override
     public Visit save(Visit object) {
-        if(object!=null) {
-            if(object.getPet()!=null) {
-                Pet pet= object.getPet();
-                if(pet.getPetType() !=null) {
-                    if(pet.getPetType().getId()==null){
-                        pet.setPetType(petTypeService.save(pet.getPetType()));
-                    }
-                }
-                else {
-                    throw new RuntimeException("Pet Type is required.");
-                }
-                if(pet.getId() == null) {
-                    Pet savedPet = petService.save(pet);
-                    pet.setId(savedPet.getId());
-                }
-            }
+        if(object!=null ||object.getPet() == null || object.getPet().getOwner() == null ||
+                object.getPet().getPetType()== null || null == object.getPet().getOwner().getId()) {
+            throw new RuntimeException("Invalid visit");
+        }
+        else{
             return super.save(object);
         }
-        return null;
     }
 
     @Override

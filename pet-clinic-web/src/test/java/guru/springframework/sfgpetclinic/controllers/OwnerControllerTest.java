@@ -11,12 +11,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
 import static org.hamcrest.Matchers.*;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -49,47 +50,40 @@ class OwnerControllerTest {
     }
 
     @Test
-    void listOwners() throws Exception {
-        //Setup the Mockito mock service layer for the OwnerController that we are testing
-        when(ownerService.findAll()).thenReturn(owners);
-
-        //Test the OwnerController through the MockMvc Spring Test service
-        mockMvc.perform(get("/owners")) //Perform an HTTP Get operation on URL /owners
-                .andExpect(status().is(200)) //Expect that HTTP returns a 200
-                .andExpect(view().name("owners/index")) //Expect that controller provides a view called "owners/index"
-                .andExpect(model().attribute("owners", hasSize(2))); //Expect a model provided to the view with size of 2
-    }
-
-    @Test
-    void listOwnersByIndex() throws Exception {
-        //Setup the Mockito mock service layer for the OwnerController that we are testing
-        when(ownerService.findAll()).thenReturn(owners);
-
-        //Test the OwnerController through the MockMvc Spring Test service
-        mockMvc.perform(get("/owners/index")) //Perform an HTTP Get operation on URL /owners
-                .andExpect(status().is(200)) //Expect that HTTP returns a 200
-                .andExpect(view().name("owners/index")) //Expect that controller provides a view called "owners/index"
-                .andExpect(model().attribute("owners", hasSize(2))); //Expect a model provided to the view with size of 2
-    }
-
-    @Test
-    void listOwnersByIndexHtml() throws Exception {
-        //Setup the Mockito mock service layer for the OwnerController that we are testing
-        when(ownerService.findAll()).thenReturn(owners);
-
-        //Test the OwnerController through the MockMvc Spring Test service
-        mockMvc.perform(get("/owners/index.html")) //Perform an HTTP Get operation on URL /owners
-                .andExpect(status().is(200)) //Expect that HTTP returns a 200
-                .andExpect(view().name("owners/index")) //Expect that controller provides a view called "owners/index"
-                .andExpect(model().attribute("owners", hasSize(2))); //Expect a model provided to the view with size of 2
-    }
-
-    @Test
     void findOwners() throws Exception {
         mockMvc.perform(get("/owners/find"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("notimplemented"));
+                .andExpect(view().name("owners/findOwners"))
+                .andExpect(model().attributeExists("owner"));
         verifyNoInteractions(ownerService);
+    }
+
+    @Test
+    void processFindFormReturnMany() throws Exception {
+        ArrayList<Owner> ownerList=new ArrayList<>();
+        ownerList.add(owner1);
+        ownerList.add(owner2);
+
+        when(ownerService.findAllByLastNameLike(anyString())).thenReturn(ownerList);
+
+        mockMvc.perform(get("/owners"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("owners/ownersList"))
+                .andExpect(model().attribute("selections", hasSize(2)));
+        verify(ownerService, times(1)).findAllByLastNameLike(anyString());
+    }
+
+    @Test
+    void processFindFormReturnOne() throws Exception {
+        ArrayList<Owner> ownerList=new ArrayList<>();
+        ownerList.add(owner1);
+
+        when(ownerService.findAllByLastNameLike(anyString())).thenReturn(ownerList);
+
+        mockMvc.perform(get("/owners"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(view().name("redirect:/owners/1"));
+        verify(ownerService, times(1)).findAllByLastNameLike(anyString());
     }
 
     @Test

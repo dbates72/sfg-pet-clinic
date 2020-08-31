@@ -73,13 +73,13 @@ public class OwnerController {
             return "owners/createOrUpdateOwnerForm";
         }
         else {
-            this.ownerService.save(owner);
-            return "redirect:/owners/" + owner.getId();
+            Owner savedOwner=this.ownerService.save(owner);
+            return "redirect:/owners/" + savedOwner.getId();
         }
     }
 
    @GetMapping("/owners/{ownerId}/edit")
-   public String initUpdateOwnerForm(@PathVariable Long ownerId, Model model) {
+   public String initUpdateOwnerForm(@PathVariable("ownerId") Long ownerId, Model model) {
         Owner owner=ownerService.findById(ownerId);
         model.addAttribute("owner", owner);
         return "owners/createOrUpdateOwnerForm";
@@ -94,7 +94,7 @@ public class OwnerController {
             //NOTE: Id needs to be explicitly set because we eliminated it in the binding
             owner.setId(ownerId);
             this.ownerService.save(owner);
-            return "redirect:/owners/{ownerId}";
+            return "redirect:/owners/" + owner.getId();
         }
    }
 

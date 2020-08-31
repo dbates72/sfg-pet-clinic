@@ -13,6 +13,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.Collection;
 
 @Controller
@@ -53,7 +54,7 @@ public class PetController {
     }
 
     @PostMapping("/pets/new")
-    public String processCreationForm(Owner owner, Pet pet, BindingResult result, Model model) {
+    public String processCreationForm(Owner owner, @Valid Pet pet, BindingResult result, Model model) {
         if(StringUtils.hasLength(pet.getName()) && pet.isNew() && owner.getPet(pet.getName(), true) != null) {
             result.rejectValue("name", "duplicate", "already exists");
         }
@@ -75,7 +76,7 @@ public class PetController {
     }
 
     @PostMapping("/pets/{petId}/edit")
-    public String processUpdateForm(Pet pet, BindingResult result, Owner owner, Model model) {
+    public String processUpdateForm(@Valid Pet pet, BindingResult result, Owner owner, Model model) {
         if(result.hasErrors()) {
             pet.setOwner(owner);
             model.addAttribute("pet", pet);
